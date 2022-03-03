@@ -1115,6 +1115,23 @@ inline float3 xyz(const float4& v) noexcept
 	return float3(v.x, v.y, v.z);
 }
 
+//Converts rodrigues to quat.
+inline quat quat_from_rodrigues(const math::float3& rodrigues) {
+    const auto halfed = rodrigues / 2.0;
+    const auto halfed_norm = math::len(halfed);
+
+    const auto real_part = std::cos(halfed_norm);
+    const auto imag_part = math::normalize(halfed) * std::sin(halfed_norm);
+    return {imag_part, real_part};
+}
+
+//Converts quat to rodrigues.
+inline float3 rodrigues_from_quat(const math::quat& quat) {
+    const auto normalized = math::normalize(quat);
+    const auto imag_part = math::float3(normalized.x, normalized.y, normalized.z);
+    return 2 * math::normalize(imag_part) * std::acos(normalized.a);
+}
+
 } // namespace math
 
 #endif // MATH_VECTOR_FLOAT_H_
