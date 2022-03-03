@@ -259,6 +259,23 @@ inline float4x4 ts_matrix(const float3& p, const float3& s) noexcept
 //		up:			the direction that is considered to be upward.
 float4x4 view_matrix(const float3& position, const float3& target, const float3& up = float3::unit_y) noexcept;
 
+// Converts rodrigues to quat.
+inline quat quat_from_rodrigues(const float3& rodrigues) {
+    const auto halfed = rodrigues / 2.0;
+    const auto halfed_norm = len(halfed);
+
+    const auto real_part = std::cos(halfed_norm);
+    const auto imag_part = normalize(halfed) * std::sin(halfed_norm);
+    return {imag_part, real_part};
+}
+
+// Converts quat to rodrigues.
+inline float3 rodrigues_from_quat(const quat& quat) {
+    const auto normalized = normalize(quat);
+    const auto imag_part = float3(normalized.x, normalized.y, normalized.z);
+    return 2 * normalize(imag_part) * std::acos(normalized.a);
+}
+
 } // namespace math
 
 #endif // MATH_TRANSFORM_H_
