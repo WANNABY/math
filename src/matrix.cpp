@@ -1,6 +1,8 @@
 #include "math/matrix.h"
 
-
+namespace {
+constexpr float kDetApproxAccuracy = 1e-4f;
+}
 namespace math {
 
 const float3x3 float3x3::identity(1, 0, 0, 0, 1, 0, 0, 0, 1);
@@ -257,7 +259,7 @@ float3x3 inverse(const float3x3& m)
 
 	// Check whether m is a singular matix
 	const float d = det(m);
-	assert(!approx_equal(d, 0.0f));
+	assert(!approx_equal(d, 0.0f, kDetApproxAccuracy));
 
 	// construct the adjugate matrix.
 	// cofactor00 cofactor10 cofactor20
@@ -286,7 +288,7 @@ float4x4 inverse(const float4x4& m) noexcept
 
 	// Check whether m is a singular matix
 	const float d = det(m);
-	assert(!approx_equal(d, 0.0f));
+	assert(!approx_equal(d, 0.0f, kDetApproxAccuracy));
 
 
 	// construct the adjugate matrix.
@@ -317,6 +319,18 @@ float4x4 inverse(const float4x4& m) noexcept
 
 	const float inv_d = 1.0f / d;
 	return adj * inv_d;
+}
+
+bool is_orthogonal(const float3x3& m) noexcept
+{
+    const float abs_d = std::abs(det(m));
+    return approx_equal(abs_d, 1.0f, kDetApproxAccuracy);
+}
+
+bool is_orthogonal(const float4x4& m) noexcept
+{
+    const float abs_d = std::abs(det(m));
+    return approx_equal(abs_d, 1.0f, kDetApproxAccuracy);
 }
 
 } // namespace math
