@@ -289,18 +289,10 @@ float3x3 inverse(const float3x3& m);
 float4x4 inverse(const float4x4& m) noexcept;
 
 // Determines whether the specified matrix is orthogonal.
-inline bool is_orthogonal(const float3x3& m) noexcept
-{
-	const float abs_d = std::abs(det(m));
-	return approx_equal(abs_d, 1.0f);
-}
+bool is_orthogonal(const float3x3& m) noexcept;
 
 // Determines whether the specified matrix is orthogonal.
-inline bool is_orthogonal(const float4x4& m) noexcept
-{
-	const float abs_d = std::abs(det(m));
-	return approx_equal(abs_d, 1.0f);
-}
+bool is_orthogonal(const float4x4& m) noexcept;
 
 // Multiplies matrix by the column vector v. 
 inline float3 mul(const float3x3& m, const float3& v) noexcept
