@@ -292,7 +292,7 @@ float4x4 inverse(const float4x4& m) noexcept;
 inline bool is_orthogonal(const float3x3& m) noexcept
 {
 	const float abs_d = std::abs(det(m));
-	return approx_equal(abs_d, 1.0f);
+	return approx_equal(abs_d, 1.0f, 1e-4f);
 }
 
 // Determines whether the specified matrix is orthogonal.
