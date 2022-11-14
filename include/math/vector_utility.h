@@ -89,7 +89,7 @@ inline float4 unpack_unorm_8_8_8_8(uint32_t val) noexcept
 // Params:
 //        a, b = input values
 template <typename Vec2, std::enable_if_t<is_n_vector<Vec2, 2>(), int> = 0>
-inline Vec2 min(const Vec2& a, const Vec2& b) noexcept
+constexpr inline Vec2 min(const Vec2& a, const Vec2& b) noexcept
 {
     return Vec2(
         std::min(a.x, b.x),
@@ -101,7 +101,7 @@ inline Vec2 min(const Vec2& a, const Vec2& b) noexcept
 // Params:
 //        a, b = input values
 template <typename Vec3, std::enable_if_t<is_n_vector<Vec3, 3>(), int> = 0>
-inline Vec3 min(const Vec3& a, const Vec3& b) noexcept
+constexpr inline Vec3 min(const Vec3& a, const Vec3& b) noexcept
 {
     return Vec3(
         std::min(a.x, b.x),
@@ -114,7 +114,7 @@ inline Vec3 min(const Vec3& a, const Vec3& b) noexcept
 // Params:
 //        a, b = input values
 template <typename Vec4, std::enable_if_t<is_n_vector<Vec4, 4>(), int> = 0>
-inline Vec4 min(const Vec4& a, const Vec4& b) noexcept
+constexpr inline Vec4 min(const Vec4& a, const Vec4& b) noexcept
 {
     return Vec4(
         std::min(a.x, b.x),
@@ -128,7 +128,7 @@ inline Vec4 min(const Vec4& a, const Vec4& b) noexcept
 // Params:
 //        a, b = input values
 template <typename Vec2, std::enable_if_t<is_n_vector<Vec2, 2>(), int> = 0>
-inline Vec2 max(const Vec2& a, const Vec2& b) noexcept
+constexpr inline Vec2 max(const Vec2& a, const Vec2& b) noexcept
 {
     return Vec2(
         std::max(a.x, b.x),
@@ -140,7 +140,7 @@ inline Vec2 max(const Vec2& a, const Vec2& b) noexcept
 // Params:
 //        a, b = input values
 template <typename Vec3, std::enable_if_t<is_n_vector<Vec3, 3>(), int> = 0>
-inline Vec3 max(const Vec3& a, const Vec3& b) noexcept
+constexpr inline Vec3 max(const Vec3& a, const Vec3& b) noexcept
 {
     return Vec3(
         std::max(a.x, b.x),
@@ -153,7 +153,7 @@ inline Vec3 max(const Vec3& a, const Vec3& b) noexcept
 // Params:
 //        a, b = input values
 template <typename Vec4, std::enable_if_t<is_n_vector<Vec4, 4>(), int> = 0>
-inline Vec4 max(const Vec4& a, const Vec4& b) noexcept
+constexpr inline Vec4 max(const Vec4& a, const Vec4& b) noexcept
 {
     return Vec4(
         std::max(a.x, b.x),
