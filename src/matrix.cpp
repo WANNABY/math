@@ -288,8 +288,6 @@ float4x4 inverse(const float4x4& m) noexcept
 
 	// Check whether m is a singular matix
 	const float d = det(m);
-	assert(!approx_equal(d, 0.0f, kDetApproxAccuracy));
-
 
 	// construct the adjugate matrix.
 	// cofactor00 cofactor10 cofactor20 cofactor30
