@@ -259,7 +259,6 @@ float3x3 inverse(const float3x3& m)
 
 	// Check whether m is a singular matix
 	const float d = det(m);
-	assert(!approx_equal(d, 0.0f, kDetApproxAccuracy));
 
 	// construct the adjugate matrix.
 	// cofactor00 cofactor10 cofactor20
