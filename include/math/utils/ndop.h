@@ -24,29 +24,29 @@ struct DOP14_Traits
         return index >= get_num_axises() ? index - get_num_axises() : index + get_num_axises();
     }
 
-    constexpr static math::float3 get_axis(size_t index) noexcept {
+    constexpr static float3 get_axis(size_t index) noexcept {
         assert(index < axises.size());
         return axises[index];
     }
 
-    constexpr static math::float3 get_plane_normal(size_t index) noexcept {
+    constexpr static float3 get_plane_normal(size_t index) noexcept {
         assert(index < get_num_planes());
         return index >= get_num_axises() ? -axises[index - get_num_axises()] : axises[index];
      }
 
 private:
-    constexpr static auto sqrt3 = std::numbers::inv_sqrt3_v<float>;
-    constexpr static std::array<math::float3, 7> axises {
-        math::float3{1.0f, 0.0f, 0.0f},
-        math::float3{0.0f, 1.0f, 0.0f},
-        math::float3{0.0f, 0.0f, 1.0f},
-        math::float3{sqrt3, sqrt3, sqrt3},
-        math::float3{sqrt3, sqrt3, -sqrt3},
-        math::float3{sqrt3, -sqrt3, sqrt3},
-        math::float3{-sqrt3, sqrt3, sqrt3},
+    constexpr static auto inv_sqrt3 = std::numbers::inv_sqrt3_v<float>;
+    constexpr static std::array<float3, 7> axises {
+        float3{1.0f, 0.0f, 0.0f},
+        float3{0.0f, 1.0f, 0.0f},
+        float3{0.0f, 0.0f, 1.0f},
+        float3{inv_sqrt3, inv_sqrt3, inv_sqrt3},
+        float3{inv_sqrt3, inv_sqrt3, -inv_sqrt3},
+        float3{inv_sqrt3, -inv_sqrt3, inv_sqrt3},
+        float3{-inv_sqrt3, inv_sqrt3, inv_sqrt3},
     };
 
-    //static_assert(math::approx_equal(math::len_squared(axises[i]), 1.0f));
+    //static_assert(approx_equal(len_squared(axises[i]), 1.0f));
 };
 
 //template <auto Traits>
@@ -58,18 +58,18 @@ class DOP : DOP14_Traits {
     constexpr static DOP compute(
         Iterator vertices_begin, Iterator vertices_end, UnaryFn&& fn_get_position = std::identity{}) noexcept;
 
-    std::vector<math::float3> get_points() const noexcept;
-    constexpr std::optional<math::float3> get_center() const noexcept;
+    std::vector<float3> get_points() const noexcept;
+    constexpr std::optional<float3> get_center() const noexcept;
     constexpr bool is_empty() const noexcept;
-    constexpr math::float3 get_size() const noexcept;
+    constexpr float3 get_size() const noexcept;
 
-    DOP transformed(const math::float4x4& transform) const noexcept;
+    DOP transformed(const float4x4& transform) const noexcept;
     constexpr DOP unite_with(const DOP& rhv) const noexcept;
-    constexpr DOP unite_with(const math::float3& point) const noexcept;
+    constexpr DOP unite_with(const float3& point) const noexcept;
 
-    constexpr void expand (const math::float3& point) noexcept;
+    constexpr void expand (const float3& point) noexcept;
     
-    constexpr bool contains(const math::float3& point) const noexcept;
+    constexpr bool contains(const float3& point) const noexcept;
 
    private:
     std::array<float, get_num_planes()> distances_ 
@@ -82,8 +82,8 @@ class DOP : DOP14_Traits {
     };
 };
 
-constexpr std::optional<math::float3> DOP::get_center() const noexcept {
-    return is_empty() ? std::nullopt : std::optional{math::float3{std::midpoint(distances_[0], -distances_[get_inverse_plane_index(0)]),
+constexpr std::optional<float3> DOP::get_center() const noexcept {
+    return is_empty() ? std::nullopt : std::optional{float3{std::midpoint(distances_[0], -distances_[get_inverse_plane_index(0)]),
                                                       std::midpoint(distances_[1], -distances_[get_inverse_plane_index(1)]),
                                                       std::midpoint(distances_[2], -distances_[get_inverse_plane_index(2)]),
     }};
@@ -93,8 +93,8 @@ constexpr bool DOP::is_empty() const noexcept {
     return std::any_of(std::begin(distances_), std::end(distances_), [](const auto& d) { return d <= std::numeric_limits<float>::lowest(); });
 }
 
-constexpr math::float3 DOP::get_size() const noexcept {
-    return is_empty() ? math::float3{} : math::float3{distances_[0] + distances_[get_inverse_plane_index(0)], distances_[1] + distances_[get_inverse_plane_index(1)], distances_[2] + distances_[get_inverse_plane_index(2)]} ;
+constexpr float3 DOP::get_size() const noexcept {
+    return is_empty() ? float3{} : float3{distances_[0] + distances_[get_inverse_plane_index(0)], distances_[1] + distances_[get_inverse_plane_index(1)], distances_[2] + distances_[get_inverse_plane_index(2)]} ;
 }
 
 template <typename Iterator, typename UnaryFn>
@@ -105,10 +105,10 @@ constexpr DOP DOP::compute(Iterator vertices_begin, Iterator vertices_end, Unary
     });
 }
 
-inline DOP DOP::transformed(const math::float4x4& transform) const noexcept {
+inline DOP DOP::transformed(const float4x4& transform) const noexcept {
     auto&& points = get_points();
     return compute(points.begin(), points.end(), [&transform](const auto& pos) {
-        const auto transformed_position = math::mul(transform, pos);
+        const auto transformed_position = mul(transform, pos);
         return xyz(transformed_position) / transformed_position.w;
      });
 }
@@ -121,23 +121,24 @@ constexpr DOP DOP::unite_with(const DOP& rhv) const noexcept {
     return result;
 }
 
-constexpr DOP DOP::unite_with(const math::float3& point) const noexcept {
+constexpr DOP DOP::unite_with(const float3& point) const noexcept {
     DOP result = *this;
     result.expand(point);
     return result;
 }
 
-constexpr void DOP::expand(const math::float3& point) noexcept {
+constexpr void DOP::expand(const float3& point) noexcept {
     for (size_t i = 0; i < get_num_planes(); ++i) {
-        const auto dot = math::dot(point, get_plane_normal(i));
-        distances_[i] = std::max(distances_[i], dot);
+        const auto projected_distance = dot(point, get_plane_normal(i));
+        distances_[i] = std::max(distances_[i], projected_distance);
     }
 }
 
-constexpr bool DOP::contains(const math::float3& point) const noexcept {
+constexpr bool DOP::contains(const float3& point) const noexcept {
+    constexpr float epsilon = 1e-7f;
     for (size_t i = 0; i < get_num_planes(); ++i) {
-        const auto dot = math::dot(point, get_plane_normal(i));
-        if ( dot > distances_[i] + 1e-7) {
+        const auto projected_distance = dot(point, get_plane_normal(i));
+        if ( projected_distance > distances_[i] + epsilon) {
             return false;
         }
     }
@@ -145,29 +146,21 @@ constexpr bool DOP::contains(const math::float3& point) const noexcept {
     return true;
 }
 
-inline std::vector<math::float3> DOP::get_points() const noexcept {
+inline std::vector<float3> DOP::get_points() const noexcept {
     struct AdjacencyInfo {
         size_t i, j, k;
-        math::float3x3 planes;
+        float3x3 planes;
         float inv_determinant;
 
         auto compute_planes_intersection_point (const DOP& self) const noexcept {
-            const math::float3 distances {self.distances_[i], self.distances_[j], self.distances_[k]};
-            const auto substitute_row = [this, distances ](int i){
+            const float3 distances {self.distances_[i], self.distances_[j], self.distances_[k]};
+            const auto solve_for = [this, distances ](auto set_column_func) noexcept {
                 auto m = planes;
-                switch (i){
-                case 0:
-                    std::tie(m.m00, m.m10, m.m20) = std::tuple{distances.x, distances.y, distances.z}; break;
-                case 1:
-                    std::tie(m.m01, m.m11, m.m21) = std::tuple{distances.x, distances.y, distances.z}; break;
-                case 2:
-                    std::tie(m.m02, m.m12, m.m22) = std::tuple{distances.x, distances.y, distances.z}; break;
-                }
-
-                return math::det(m);
+                set_column_func(m, distances);
+                return det(m) * inv_determinant;
             };
 
-            return math::float3{substitute_row(0) * inv_determinant, substitute_row(1) * inv_determinant, substitute_row(2) * inv_determinant};
+            return float3{solve_for(set_ox<float3x3>), solve_for(set_oy<float3x3>), solve_for(set_oz<float3x3>)};
         };
     };
     
@@ -186,9 +179,9 @@ inline std::vector<math::float3> DOP::get_points() const noexcept {
                         continue;
                     }
 
-                    const math::float3x3 planes{i_normal.x, i_normal.y, i_normal.z, j_normal.x, j_normal.y, j_normal.z, k_normal.x, k_normal.y, k_normal.z};
+                    const float3x3 planes{i_normal.x, i_normal.y, i_normal.z, j_normal.x, j_normal.y, j_normal.z, k_normal.x, k_normal.y, k_normal.z};
                     auto d = det(planes);
-                    if (math::approx_equal(d, 0.0f)) {
+                    if (approx_equal(d, 0.0f)) {
                         continue;
                     }
 
@@ -201,7 +194,7 @@ inline std::vector<math::float3> DOP::get_points() const noexcept {
     }();
 
 
-    std::vector<math::float3> result;
+    std::vector<float3> result;
     result.reserve(planes_adjacency.size());
 
     for (const auto adjacency : planes_adjacency) {
@@ -216,6 +209,6 @@ inline std::vector<math::float3> DOP::get_points() const noexcept {
     return result;
 }
 
-}
+} // namespace math::utils
 
 #endif
