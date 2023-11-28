@@ -19,12 +19,12 @@ struct DOP14_Traits
     constexpr static size_t get_num_axises() noexcept { return std::size(axises); }
     constexpr static size_t get_num_planes() noexcept { return get_num_axises() * 2; }
 
-    constexpr size_t get_inverse_plane_index(size_t index) const noexcept {
-        assert(index < get_num_planes());
-        return index >= get_num_axises() ? index - get_num_axises() : index + get_num_axises();
+    constexpr std::pair<size_t, size_t> get_axis_indices(size_t index) const noexcept {
+        assert(index < get_num_axises());
+        return {index, index + get_num_axises()};
     }
 
-    constexpr static float3 get_axis(size_t index) noexcept {
+    constexpr static float3 get_axis_direction(size_t index) noexcept {
         assert(index < axises.size());
         return axises[index];
     }
@@ -52,11 +52,18 @@ private:
 //template <auto Traits>
 class DOP : DOP14_Traits {
    public:
+    struct AxisSpan {
+        float min, max;
+    };
+
+   public:
     constexpr explicit DOP() noexcept = default;
 
     template <typename Iterator, typename UnaryFn>
     constexpr static DOP compute(
         Iterator vertices_begin, Iterator vertices_end, UnaryFn&& fn_get_position = std::identity{}) noexcept;
+
+    constexpr AxisSpan get_axis(size_t index) const noexcept;
 
     std::vector<float3> get_points() const noexcept;
     constexpr std::optional<float3> get_center() const noexcept;
@@ -82,11 +89,25 @@ class DOP : DOP14_Traits {
     };
 };
 
+constexpr DOP::AxisSpan DOP::get_axis(size_t index) const noexcept {
+    const auto [pos_index, neg_index] = get_axis_indices(index);
+    return {-distances_[neg_index], distances_[pos_index]};
+}
+
 constexpr std::optional<float3> DOP::get_center() const noexcept {
-    return is_empty() ? std::nullopt : std::optional{float3{std::midpoint(distances_[0], -distances_[get_inverse_plane_index(0)]),
-                                                      std::midpoint(distances_[1], -distances_[get_inverse_plane_index(1)]),
-                                                      std::midpoint(distances_[2], -distances_[get_inverse_plane_index(2)]),
-    }};
+    if (is_empty()) {
+        return std::nullopt;
+    }
+
+    const auto x_span = get_axis(0);
+    const auto y_span = get_axis(1);
+    const auto z_span = get_axis(2);
+
+    return float3{
+        std::midpoint(x_span.min, x_span.max),
+        std::midpoint(y_span.min, y_span.max),
+        std::midpoint(z_span.min, z_span.max),
+    };
 }
 
 constexpr bool DOP::is_empty() const noexcept { 
@@ -94,7 +115,15 @@ constexpr bool DOP::is_empty() const noexcept {
 }
 
 constexpr float3 DOP::get_size() const noexcept {
-    return is_empty() ? float3{} : float3{distances_[0] + distances_[get_inverse_plane_index(0)], distances_[1] + distances_[get_inverse_plane_index(1)], distances_[2] + distances_[get_inverse_plane_index(2)]} ;
+    if (is_empty()) {
+        return float3{};
+    }
+
+    const auto x_span = get_axis(0);
+    const auto y_span = get_axis(1);
+    const auto z_span = get_axis(2);
+
+    return {x_span.max - x_span.min, y_span.max - y_span.min, z_span.max - z_span.min};
 }
 
 template <typename Iterator, typename UnaryFn>
@@ -135,7 +164,7 @@ constexpr void DOP::expand(const float3& point) noexcept {
 }
 
 constexpr bool DOP::contains(const float3& point) const noexcept {
-    constexpr float epsilon = 1e-7f;
+    constexpr float epsilon = 1e-5f;
     for (size_t i = 0; i < get_num_planes(); ++i) {
         const auto projected_distance = dot(point, get_plane_normal(i));
         if ( projected_distance > distances_[i] + epsilon) {
