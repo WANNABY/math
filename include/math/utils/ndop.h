@@ -54,14 +54,17 @@ class DOP : DOP14_Traits {
    public:
     struct AxisSpan {
         float min, max;
+
+        constexpr float get_extent() const noexcept { return max - min; }
+        constexpr float get_center() const noexcept { return std::midpoint(min, max); }
     };
 
    public:
     constexpr explicit DOP() noexcept = default;
 
-    template <typename Iterator, typename UnaryFn>
+    template <typename Iterator, typename UnaryFn = std::identity>
     constexpr static DOP compute(
-        Iterator vertices_begin, Iterator vertices_end, UnaryFn&& fn_get_position = std::identity{}) noexcept;
+        Iterator vertices_begin, Iterator vertices_end, UnaryFn&& fn_get_position = {}) noexcept;
 
     constexpr AxisSpan get_axis(size_t index) const noexcept;
 
@@ -95,19 +98,15 @@ constexpr DOP::AxisSpan DOP::get_axis(size_t index) const noexcept {
 }
 
 constexpr std::optional<float3> DOP::get_center() const noexcept {
-    if (is_empty()) {
-        return std::nullopt;
-    }
+	if (is_empty()) {
+		return std::nullopt;
+	}
 
-    const auto x_span = get_axis(0);
-    const auto y_span = get_axis(1);
-    const auto z_span = get_axis(2);
-
-    return float3{
-        std::midpoint(x_span.min, x_span.max),
-        std::midpoint(y_span.min, y_span.max),
-        std::midpoint(z_span.min, z_span.max),
-    };
+	return float3{
+		get_axis(0).get_center(),
+		get_axis(1).get_center(),
+		get_axis(2).get_center(),
+	};
 }
 
 constexpr bool DOP::is_empty() const noexcept { 
@@ -115,15 +114,15 @@ constexpr bool DOP::is_empty() const noexcept {
 }
 
 constexpr float3 DOP::get_size() const noexcept {
-    if (is_empty()) {
-        return float3{};
-    }
+	if (is_empty()) {
+		return float3{};
+	}
 
-    const auto x_span = get_axis(0);
-    const auto y_span = get_axis(1);
-    const auto z_span = get_axis(2);
-
-    return {x_span.max - x_span.min, y_span.max - y_span.min, z_span.max - z_span.min};
+	return {
+		get_axis(0).get_extent(),
+		get_axis(1).get_extent(),
+		get_axis(2).get_extent(),
+	};
 }
 
 template <typename Iterator, typename UnaryFn>
@@ -226,7 +225,7 @@ inline std::vector<float3> DOP::get_points() const noexcept {
     std::vector<float3> result;
     result.reserve(planes_adjacency.size());
 
-    for (const auto adjacency : planes_adjacency) {
+    for (const auto& adjacency : planes_adjacency) {
         const auto point = adjacency.compute_planes_intersection_point(*this);
         if (!contains(point)) {
             continue;
