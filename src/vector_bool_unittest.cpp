@@ -147,7 +147,7 @@ public:
 		Assert::AreEqual(v, bool3(true));
 	}
 
-	TEST_METHOD(not)
+	TEST_METHOD(not_impl)
 	{
 		using math::not_impl;
 

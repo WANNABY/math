@@ -10,5 +10,6 @@
     <ClCompile Include="..\src\vector_utility_unittest.cpp" />
     <ClCompile Include="..\src\vector_bool_unittest.cpp" />
     <ClCompile Include="..\src\min_max_unittest.cpp" />
+    <ClCompile Include="..\src\ndop_unittestcpp.cpp" />
   </ItemGroup>
 </Project>
