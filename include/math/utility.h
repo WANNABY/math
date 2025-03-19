@@ -61,6 +61,9 @@ Numeric sign(const Numeric& s) noexcept;
 template<typename Numeric>
 Numeric step(const Numeric& edge, const Numeric& x) noexcept;
 
+template<typename Numeric>
+Numeric smoothstep(Numeric x, Numeric low, Numeric high) noexcept;
+
 } // namespace math
 
 #endif // MATH_UTILITY_H_
