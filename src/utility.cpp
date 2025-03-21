@@ -123,4 +123,18 @@ template uint8_t step<uint8_t>(const uint8_t& edge, const uint8_t& x) noexcept;
 template uint32_t step<uint32_t>(const uint32_t& edge, const uint32_t& x) noexcept;
 template uint64_t step<uint64_t>(const uint64_t& edge, const uint64_t& x) noexcept;
 
+template<typename Numeric>
+Numeric smoothstep(Numeric x, Numeric low, Numeric high) noexcept
+{
+	static_assert(std::is_floating_point<Numeric>::value, "Numeric must be a floating point type.");
+
+	const Numeric t = saturate((x - low) / (high - low));
+	return t * t * (Numeric(3) - Numeric(2) * t);
+}
+
+template float smoothstep<float>(float x, float low, float high) noexcept;
+template double smoothstep<double>(double x, double low, double high) noexcept;
+template long double smoothstep<long double>(long double x, long double low, long double high) noexcept;
+
+
 } // namespace math
